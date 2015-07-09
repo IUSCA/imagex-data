@@ -1,0 +1,17 @@
+{
+  "name": "trident-data",
+  "version": "1.0.0",
+  "description": "data service",
+  "main": "app.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Soichi Hayashi <hayashis@iu.edu> (http://soichi.us)",
+  "license": "ISC",
+  "dependencies": {
+    "debug": "^2.2.0",
+    "express": "^4.13.0",
+    "express-jwt": "^3.0.1",
+    "morgan": "^1.6.1"
+  }
+}
