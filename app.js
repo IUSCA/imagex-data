@@ -84,6 +84,10 @@ for(var url in config.paths) {
     }, express.static(props.path));
 }
 
+app.get('/health', function(req, res) {
+    res.json({status: 'ok'});
+});
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     var err = new Error('Not Found');
