@@ -9,6 +9,7 @@
   "author": "Soichi Hayashi <hayashis@iu.edu> (http://soichi.us)",
   "license": "ISC",
   "dependencies": {
+    "compression": "^1.5.1",
     "debug": "^2.2.0",
     "express": "^4.13.0",
     "express-jwt": "^3.0.1",

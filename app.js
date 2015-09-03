@@ -5,11 +5,13 @@ var jwt = require('express-jwt');
 var path = require('path');
 var logger = require('morgan');
 var fs = require('fs');
+var compress = require('compression');
 
 var config = require('./config/config').config;
 
 var app = express();
 //app.use(logger(app.get('DEBUG'))); //TODO - pull it from config or app.get('env')?
+app.use(compress());
 
 var publicKey = fs.readFileSync('config/auth.pub');
 function jwtcheck(req, res, next) {
@@ -30,7 +32,6 @@ function jwtcheck(req, res, next) {
             });
         }
     }
-
     res.status(401);
     res.json({message:"you are not authorized to access the url:"+req.url});
 }
