@@ -4,6 +4,7 @@
 //node
 var path = require('path');
 var fs = require('fs');
+var compress = require('compression');
 
 //contrib
 var express = require('express');
@@ -17,6 +18,30 @@ var logger = new winston.Logger(config.logger.winston);
 
 var app = express();
 app.use(expressWinston.logger(config.logger.winston));
+app.use(compress());
+
+/*
+var publicKey = fs.readFileSync('config/auth.pub');
+function jwtcheck(req, res, next) {
+    if(!req.user) {
+        res.status(401);
+        res.json({message:"you are not authenticated"});
+        return;
+    }
+    
+    if(req.user.scopes) {
+        if(req.user.scopes.data.allowed) {
+            req.user.scopes.data.allowed.forEach(function(pattern) {
+                if(req.url.indexOf(pattern) == 0) {
+                    return next(); //allowed
+                }
+            });
+        }
+    }
+    res.status(401);
+    res.json({message:"you are not authorized to access the url:"+req.url});
+}
+*/
 
 //for debugging..
 app.use(function(req, res, next) {
