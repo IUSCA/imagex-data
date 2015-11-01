@@ -1,39 +1,22 @@
 #!/usr/bin/node
+'use strict';
 
-var express = require('express');
-var jwt = require('jsonwebtoken');
+//node
 var path = require('path');
-var logger = require('morgan');
 var fs = require('fs');
 
-var config = require('./config/config').config;
+//contrib
+var express = require('express');
+var jwt = require('jsonwebtoken');
+var winston = require('winston');
+var expressWinston = require('express-winston');
+
+//mine
+var config = require('./config');
+var logger = new winston.Logger(config.logger.winston);
 
 var app = express();
-//app.use(logger(app.get('DEBUG'))); //TODO - pull it from config or app.get('env')?
-
-/*
-var publicKey = fs.readFileSync('config/auth.pub');
-function jwtcheck(req, res, next) {
-    if(!req.user) {
-        res.status(401);
-        res.json({message:"you are not authenticated"});
-        return;
-    }
-    
-    if(req.user.scopes) {
-        if(req.user.scopes.data.allowed) {
-            req.user.scopes.data.allowed.forEach(function(pattern) {
-                if(req.url.indexOf(pattern) == 0) {
-                    return next(); //allowed
-                }
-            });
-        }
-    }
-
-    res.status(401);
-    res.json({message:"you are not authorized to access the url:"+req.url});
-}
-*/
+app.use(expressWinston.logger(config.logger.winston));
 
 //for debugging..
 app.use(function(req, res, next) {
@@ -88,19 +71,29 @@ app.get('/health', function(req, res) {
     res.json({status: 'ok'});
 });
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-    var err = new Error('Not Found');
-    err.status = 404;
-    next(err);
-});
-
+//error handling
+app.use(expressWinston.errorLogger(config.logger.winston));
 app.use(function(err, req, res, next) {
-    //console.dir(req.headers.authorization);
-    console.dir(err);
+    logger.info(err);
+    logger.info(err.stack);
     res.status(err.status || 500);
-    res.json(err);
+    res.json({message: err.message, /*stack: err.stack*/}); //let's hide callstack for now
 });
 
-module.exports = app;
+process.on('uncaughtException', function (err) {
+    //TODO report this to somewhere!
+    logger.error((new Date).toUTCString() + ' uncaughtException:', err.message)
+    logger.error(err.stack)
+    //process.exit(1); //some people think we should do this.. but I am not so sure..
+})
+
+exports.app = app;
+exports.start = function() {
+    var port = process.env.PORT || config.express.port || '8080';
+    var host = process.env.HOST || config.express.host || 'localhost';
+    app.listen(port, host, function() {
+        console.log("data server listening on port %d in %s mode", port, app.settings.env);
+    });
+}
+
 
