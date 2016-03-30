@@ -6,6 +6,9 @@ var path = require('path');
 var fs = require('fs');
 var compress = require('compression');
 
+//not sure if this does anything at all.
+//compress({strategy: "zlib.Z_RLE"});
+
 //contrib
 var express = require('express');
 var jwt = require('jsonwebtoken');
@@ -22,14 +25,14 @@ app.use(compress());
 
 //for debugging..
 app.use(function(req, res, next) {
-    console.log("requested:"+req.url);
+    logger.debug("requested:"+req.url);
     next();
 });
 
-for(var url in config.paths) {
-    var props = config.paths[url];
+for(var url in config.data.paths) {
+    var props = config.data.paths[url];
     props.public_key = fs.readFileSync(props.public_key);
-    console.log("mapping "+url+" to "+props.path);
+    logger.info("mapping "+url+" to "+props.path);
     app.use(url, function(req, res, next) {
         //Allow CORS if requested via config
         if(props.allow_origin) {
@@ -44,7 +47,7 @@ for(var url in config.paths) {
         }
 
         //verify token
-        var public_key = config.paths[url].public_key;
+        var public_key = config.data.paths[url].public_key;
         jwt.verify(token, public_key, function(err, decoded) {
             if(err) {
                 res.send(err);
@@ -98,7 +101,7 @@ exports.start = function() {
     var port = process.env.PORT || config.express.port || '8080';
     var host = process.env.HOST || config.express.host || 'localhost';
     app.listen(port, host, function() {
-        console.log("data server listening on port %d in %s mode", port, app.settings.env);
+        logger.info("data server listening on port %d in %s mode", port, app.settings.env);
     });
 }
 
