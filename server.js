@@ -32,7 +32,7 @@ app.use(function(req, res, next) {
 for(var url in config.data.paths) {
     var props = config.data.paths[url];
     props.public_key = fs.readFileSync(props.public_key);
-    logger.info("mapping "+url+" to "+props.path);
+    logger.info("exposing "+props.path+" at "+url);
     app.use(url, function(req, res, next) {
         //Allow CORS if requested via config
         if(props.allow_origin) {
