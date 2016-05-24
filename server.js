@@ -24,29 +24,6 @@ var app = express();
 app.use(expressWinston.logger(config.logger.winston));
 app.use(compress());
 
-/*
-var publicKey = fs.readFileSync('config/auth.pub');
-function jwtcheck(req, res, next) {
-    if(!req.user) {
-        res.status(401);
-        res.json({message:"you are not authenticated"});
-        return;
-    }
-    
-    if(req.user.scopes) {
-        if(req.user.scopes.data.allowed) {
-            req.user.scopes.data.allowed.forEach(function(pattern) {
-                if(req.url.indexOf(pattern) == 0) {
-                    return next(); //allowed
-                }
-            });
-        }
-    }
-    res.status(401);
-    res.json({message:"you are not authorized to access the url:"+req.url});
-}
-*/
-
 //for debugging..
 app.use(function(req, res, next) {
     logger.debug("requested:"+req.url);
@@ -110,10 +87,14 @@ app.get('/health', function(req, res) {
 //error handling
 app.use(expressWinston.errorLogger(config.logger.winston));
 app.use(function(err, req, res, next) {
+    if(typeof err == "string") err = {message: err};
     logger.error(err);
-    logger.error(err.stack);
+    if(err.stack) {
+        logger.error(err.stack);
+        err.stack = "hidden"; //for ui
+    }
     res.status(err.status || 500);
-    res.json({message: err.message, /*stack: err.stack*/}); //let's hide callstack for now
+    res.json(err);
 });
 
 process.on('uncaughtException', function (err) {
