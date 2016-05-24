@@ -14,6 +14,7 @@ var express = require('express');
 var jwt = require('jsonwebtoken');
 var winston = require('winston');
 var expressWinston = require('express-winston');
+var cors = require('cors');
 
 //mine
 var config = require('./config');
@@ -56,12 +57,19 @@ for(var url in config.data.paths) {
     var props = config.data.paths[url];
     props.public_key = fs.readFileSync(props.public_key);
     logger.info("mapping "+url+" to "+props.path);
-    app.use(url, function(req, res, next) {
+    
+    var corsopt = {}
+    if(props.allow_origin) corsopt.origin = props.allow_origin;
+    app.use(url, cors(corsopt), function(req, res, next) {
+        console.log(url);
         //Allow CORS if requested via config
+        /*
         if(props.allow_origin) {
             res.header("Access-Control-Allow-Origin", props.allow_origin);
-            res.header("Access-Control-Allow-Headers", "X-Requested-With,Authorization");
+            //res.header("Access-Control-Allow-Headers", "X-Requested-With,Authorization,Pragma");
+            //res.header("Access-Control-Allow-Headers", "*");
         }
+        */
         
         //pull jwt token from header or via query
         var token = req.query.at;
