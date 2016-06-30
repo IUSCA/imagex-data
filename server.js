@@ -32,7 +32,7 @@ app.use(function(req, res, next) {
 
 for(var url in config.data.paths) {
     var props = config.data.paths[url];
-    props.public_key = fs.readFileSync(props.public_key);
+    //props.public_key = fs.readFileSync(props.public_key);
     logger.info("mapping "+url+" to "+props.path);
     
     var corsopt = {}
