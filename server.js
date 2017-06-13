@@ -11,6 +11,7 @@ var compress = require('compression');
 
 //contrib
 var express = require('express');
+var https = require('https');
 var jwt = require('jsonwebtoken');
 var winston = require('winston');
 var expressWinston = require('express-winston');
@@ -108,7 +109,11 @@ exports.app = app;
 exports.start = function() {
     var port = process.env.PORT || config.express.port || '8080';
     var host = process.env.HOST || config.express.host || 'localhost';
-    app.listen(port, host, function() {
+    
+    https.createServer({
+		key: config.express.key,
+		cert: config.express.cert,
+	}, app).listen(port, host, function() {
         logger.info("data server listening on port %d in %s mode", port, app.settings.env);
     });
 }
