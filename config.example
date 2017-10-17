@@ -1,48 +1,45 @@
 'use strict';
 
-var fs = require('fs');
-var winston = require('winston');
+module.exports = function(fs, winston) {
+    var exports = {};
 
-exports.data = {
-    paths: {
-        "/imagexdata/imagex": {
-            //path: "/net/spitz/usr/local/nfs-dev/tile1",
-            path: "/N/dcwan/projects/odi/dev/scratch/imagex_tiles",
-            allow_origin: "*",
-            public_key: fs.readFileSync('/usr/local/imagex-data/auth.pub'),
-            scope: "imagex", //scope to check for authorization
+    exports.data = {
+        paths: {
+            "/imagexdata/imagex": {  //requested path
+                path: "/opt/sca/imagex-tiles",  //real path
+                allow_origin: "*",
+                public_key: fs.readFileSync('/opt/sca/config/imagex.pub','utf8'),
+                scope: "imagex", //scope to check for authorization
+            }
         }
     }
-}
 
-exports.express = {
-    port: 9080,
-    host: "localhost",
-    key: fs.readFileSync('/etc/grid-security/http/key.pem'),
-    cert: fs.readFileSync('/etc/grid-security/http/cert.pem'),
-    jwt: {
-         // public_key: fs.readFileSync('/home/hayashis/git/auth/api/config/auth.pub')
-         //public_key: { secret: new Buffer('shhhhhhared-secret', 'base64') }
+    exports.express = {
+        port: 8081,
+        host: "localhost"
+    };
+
+    exports.logger = {
+        winston: {
+            transports: [
+                //display all logs to console
+                new winston.transports.Console({
+                    timestamp: function() {
+                        return Date.now(); //show time in unix timestamp
+                    },
+                    level: 'debug',
+                    colorize: true
+                }),
+
+                //store all warnings / errors in error.log
+                new (winston.transports.File)({
+                    filename: 'error.log',
+                    level: 'warn'
+                })
+            ]
+        }
     }
+
+    return exports;
 };
 
-exports.logger = {
-    winston: {
-        transports: [
-            //display all logs to console
-            new winston.transports.Console({
-                timestamp: function() {
-                    return Date.now(); //show time in unix timestamp
-                },
-                level: 'debug',
-                colorize: true
-            }),
-
-            //store all warnings / errors in error.log
-            new (winston.transports.File)({
-                filename: 'error.log',
-                level: 'warn'
-            })
-        ]
-    }
-}

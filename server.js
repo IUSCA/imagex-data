@@ -4,21 +4,18 @@
 //node
 var path = require('path');
 var fs = require('fs');
+var winston = require('winston');
 var compress = require('compression');
-
-//not sure if this does anything at all.
-//compress({strategy: "zlib.Z_RLE"});
 
 //contrib
 var express = require('express');
-var https = require('https');
+var http = require('http');
 var jwt = require('jsonwebtoken');
-var winston = require('winston');
 var expressWinston = require('express-winston');
 var cors = require('cors');
 
 //mine
-var config = require('./config');
+var config = require('/opt/sca/config/config.js')(fs, winston);
 var logger = new winston.Logger(config.logger.winston);
 
 var app = express();
@@ -33,31 +30,19 @@ app.use(function(req, res, next) {
 
 for(var url in config.data.paths) {
     var props = config.data.paths[url];
-    //props.public_key = fs.readFileSync(props.public_key);
+
     logger.info("mapping "+url+" to "+props.path);
     
     var corsopt = {}
     if(props.allow_origin) corsopt.origin = props.allow_origin;
     app.use(url, cors(corsopt), function(req, res, next) {
-        console.log(url);
-        //Allow CORS if requested via config
-        /*
-        if(props.allow_origin) {
-            res.header("Access-Control-Allow-Origin", props.allow_origin);
-            //res.header("Access-Control-Allow-Headers", "X-Requested-With,Authorization,Pragma");
-            //res.header("Access-Control-Allow-Headers", "*");
-        }
-        */
-        
-        //pull jwt token from header or via query
+
         var token = req.query.at;
         if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
             token = req.headers.authorization.split(' ')[1];
         }
 
-        //verify token
-        var public_key = config.data.paths[url].public_key;
-        jwt.verify(token, public_key, function(err, decoded) {
+        jwt.verify(token, props.public_key, {algorithm: 'RS256'}, function(err, decoded) {
             if(err) {
                 res.send(err);
             } else {
@@ -65,14 +50,11 @@ for(var url in config.data.paths) {
                 var allowed_paths = decoded.scopes[props.scope];
                 var allowed = false;
                 allowed_paths.forEach(function(allowed_path) {
-                    //console.log(allowed_path);
-                    //console.log(req.url.indexOf(allowed_path));
                     if(req.url.indexOf(allowed_path) === 0) {
-                        //console.log("allowed"); 
                         allowed = true;
                     }
                 });
-                if(allowed) next();
+                if(allowed) next();  //give em what they want
                 else {
                     next({message: 'requested path not authorized by your token.', allowed_paths: allowed_paths, requested_url: req.url});
                 }
@@ -99,22 +81,18 @@ app.use(function(err, req, res, next) {
 });
 
 process.on('uncaughtException', function (err) {
-    //TODO report this to somewhere!
+
     logger.error((new Date).toUTCString() + ' uncaughtException:', err.message)
     logger.error(err.stack)
-    //process.exit(1); //some people think we should do this.. but I am not so sure..
 })
 
 exports.app = app;
 exports.start = function() {
-    var port = process.env.PORT || config.express.port || '8080';
+    var port = process.env.PORT || config.express.port || '8081';
     var host = process.env.HOST || config.express.host || 'localhost';
     
-    https.createServer({
-		key: config.express.key,
-		cert: config.express.cert,
-	}, app).listen(port, host, function() {
-        logger.info("data server listening on port %d in %s mode", port, app.settings.env);
+    app.listen(port, function() {
+        logger.info("ImageX data service listening on port %d", port);
     });
 }
 

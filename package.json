@@ -2,11 +2,11 @@
   "name": "trident-data",
   "version": "1.0.0",
   "description": "data service",
-  "main": "app.js",
+  "main": "data.js",
   "scripts": {
     "test": "mocha"
   },
-  "author": "Soichi Hayashi <hayashis@iu.edu> (http://soichi.us)",
+  "author": "Michael Young <youngmd@iu.edu>",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.7.1",
@@ -14,7 +14,7 @@
     "debug": "^2.2.0",
     "express": "^4.13.4",
     "express-winston": "^0.4.1",
-    "jsonwebtoken": "^5.7.0",
+    "jsonwebtoken": "5.7.0",
     "winston": "^2.2.0"
   }
 }
