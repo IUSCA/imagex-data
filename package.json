@@ -12,7 +12,7 @@
     "cors": "^2.7.1",
     "compression": "^1.6.1",
     "debug": "^2.2.0",
-    "express": "^4.13.4",
+    "express": "^4.17.3",
     "express-winston": "^0.4.1",
     "jsonwebtoken": "5.7.0",
     "winston": "^2.2.0"
